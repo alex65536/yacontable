@@ -13,11 +13,11 @@ import (
 )
 
 type Presenter struct {
-	k *Keeper
-	ctx context.Context
+	k      *Keeper
+	ctx    context.Context
 	logger *zap.Logger
-	t *template.Template
-	conf *Config
+	t      *template.Template
+	conf   *Config
 }
 
 func getScoreColor(score float64) string {
@@ -31,12 +31,12 @@ func getScoreColor(score float64) string {
 	g := 0.0
 	b := 0.0
 	if score < 0.5 {
-		d := score*2.0
+		d := score * 2.0
 		r = 0.75 + 0.25*d
-		g = 0.5*d
+		g = 0.5 * d
 		b = 0.0
 	} else {
-		d := (score-0.5)*2.0
+		d := (score - 0.5) * 2.0
 		r = 1.0 - d
 		g = 0.5
 		b = 0
@@ -46,25 +46,25 @@ func getScoreColor(score float64) string {
 
 func NewPresenter(ctx context.Context, logger *zap.Logger, k *Keeper, conf *Config) (*Presenter, error) {
 	funcMap := template.FuncMap{
-        "inc": func(i int) int {
-            return i + 1
-        },
+		"inc": func(i int) int {
+			return i + 1
+		},
 		"supportsColor": func() bool {
 			return conf.MaxScorePerTask != nil
 		},
 		"calcColor": func(count int, score float64) string {
 			return getScoreColor(score / (*conf.MaxScorePerTask * float64(count)))
 		},
-    }
+	}
 	t, err := template.New("standings").Funcs(funcMap).ParseFiles("./data/standings.html")
 	if err != nil {
 		return nil, fmt.Errorf("parsing template: %w", err)
 	}
 	return &Presenter{
-		k: k,
-		ctx: ctx,
+		k:      k,
+		ctx:    ctx,
 		logger: logger,
-		t: t,
+		t:      t,
 	}, nil
 }
 
@@ -91,7 +91,7 @@ func (p *Presenter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		p.logger.Error("error serving request", zap.Error(err))
-		_, _ = io.WriteString(w, "got error: " + err.Error())
+		_, _ = io.WriteString(w, "got error: "+err.Error())
 		return
 	}
 	_, _ = w.Write(b)

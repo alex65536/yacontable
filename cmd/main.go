@@ -42,11 +42,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	http.Handle("/", pres)
 	http.HandleFunc("/style.css", func(w http.ResponseWriter, req *http.Request) {
 		http.ServeFile(w, req, "./data/style.css")
 	})
-	
+
 	<-done
 }

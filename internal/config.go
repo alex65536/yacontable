@@ -23,8 +23,8 @@ type Config struct {
 	ErrorRefreshDuration time.Duration `json:"error_refresh_duration"`
 	StandingsForJudge    bool          `json:"standings_for_judge"`
 	PageSize             int           `json:"page_size"`
-	LoginWhitelistRegex   string `json:"login_whitelist_regex"`
-	MaxScorePerTask *float64 `json:"max_score_per_task"`
+	LoginWhitelistRegex  string        `json:"login_whitelist_regex"`
+	MaxScorePerTask      *float64      `json:"max_score_per_task"`
 }
 
 func (c *Config) FillDefaults() {
