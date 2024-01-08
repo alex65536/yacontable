@@ -120,6 +120,11 @@ func (p *Presenter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		_, _ = io.WriteString(w, "use GET method")
 		return
 	}
+	if req.URL.Path != "/" {
+		w.WriteHeader(http.StatusTeapot)
+		_, _ = io.WriteString(w, "what are you doing here?")
+		return
+	}
 	query := req.URL.Query()
 	filter := query.Get("filter")
 	b, err := p.doBuildTemplate(filter)
