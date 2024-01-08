@@ -17,6 +17,8 @@ type Contest struct {
 
 type Config struct {
 	ListenAddr           string        `json:"listen_addr"`
+	SecureListenAddr     string        `json:"secure_listen_addr"`
+	AllowedSecureDomains []string      `json:"allowed_secure_domains"`
 	Domain               string        `json:"domain"`
 	Contests             []Contest     `json:"contests"`
 	RefreshDuration      time.Duration `json:"refresh_duration"`

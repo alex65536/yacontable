@@ -6,7 +6,34 @@ import (
 
 	"github.com/alex65536/yacontable/internal"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/acme/autocert"
 )
+
+func setupServers(conf *internal.Config) {
+	go func() {
+		err := http.ListenAndServe(conf.ListenAddr, http.DefaultServeMux)
+		if err != nil {
+			panic(err)
+		}
+	}()
+	if conf.SecureListenAddr != "" {
+		m := &autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(conf.AllowedSecureDomains...),
+			Cache:      autocert.DirCache("secrets/certs"),
+		}
+		server := &http.Server{
+			Addr:      conf.SecureListenAddr,
+			TLSConfig: m.TLSConfig(),
+		}
+		go func() {
+			err := server.ListenAndServeTLS("", "")
+			if err != nil {
+				panic(err)
+			}
+		}()
+	}
+}
 
 func main() {
 	logger, err := zap.NewDevelopment()
@@ -22,14 +49,7 @@ func main() {
 		panic(err)
 	}
 
-	done := make(chan struct{}, 1)
-	go func() {
-		err := http.ListenAndServe(conf.ListenAddr, http.DefaultServeMux)
-		if err != nil {
-			panic(err)
-		}
-		done <- struct{}{}
-	}()
+	setupServers(conf)
 
 	api, err := internal.NewApi(logger, context.Background(), conf, sec)
 	if err != nil {
@@ -48,5 +68,5 @@ func main() {
 		http.ServeFile(w, req, "./data/style.css")
 	})
 
-	<-done
+	<-make(chan struct{})
 }
