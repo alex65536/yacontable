@@ -1,0 +1,41 @@
+html, body {
+    width: 100%;
+}
+
+.standings {
+    border-color: black;
+    border-collapse: collapse;
+    font-family: "Helvetica", "Arial", sans-serif;
+    font-size: 12pt;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.standings th, .standings td {
+    border: 1pt solid;
+    border-color: black;
+    padding: 2pt 4pt;
+}
+
+.standings th {
+    background-color: #d9d9f2;
+    font-weight: bold;
+    color: #212144;
+    border-color: black;
+}
+
+.login, .num, .task {
+    background-color: #f9f9ff;
+}
+
+.total {
+    background-color: #e8eaf3;
+}
+
+.login-head, .login, .num-head, .num {
+    text-align: left;
+}
+
+.total {
+    font-weight: bold;
+}

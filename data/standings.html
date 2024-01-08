@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Contest Standings</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="/style.css">
+    </head>
+    <body>
+        <table class="standings">
+            <tr>
+                <th class="num-head">#</th>
+                <th class="login-head">Login</th>
+                {{ range .Header.Tasks }}
+                    <th class="task-head"> {{ .Title }} </th>
+                {{ end }}
+                <th class="score=head">Total</th>
+            </tr>
+            {{ range $i, $p := .Participants }}
+                {{ with $p }}
+                <tr>
+                    <td class="num"> {{ $i | inc }} </td>
+                    <td class="login"> {{ .Login }} </td>
+                    {{ range .Tasks }}
+                        <td class="task"{{- if supportsColor }} style="color: {{ .Score | calcColor 1 }};" {{ end -}}> {{ printf "%.2f" .Score }} </td>
+                    {{ end }}
+                    <td class="total"{{- if supportsColor }} style="color: {{ .Total | calcColor (.Tasks | len) }};" {{ end -}}> {{ printf "%.2f" .Total }} </td>
+                </tr>
+                {{ end }}
+            {{ end }}
+        </table>
+    </body>
+</html>
+
