@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"net/http"
 
 	"github.com/alex65536/yacontable/internal"
@@ -67,6 +68,13 @@ func main() {
 	http.Handle("/", gzhttp.GzipHandler(pres))
 	http.Handle("/style.css", gzhttp.GzipHandler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		http.ServeFile(w, req, "./data/style.css")
+	})))
+	http.HandleFunc("/robots.txt", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = io.WriteString(w, "not found")
+	})
+	http.Handle("/favicon.ico", gzhttp.GzipHandler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		http.ServeFile(w, req, "./data/favicon.ico")
 	})))
 
 	<-make(chan struct{})
