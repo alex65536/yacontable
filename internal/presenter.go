@@ -82,6 +82,7 @@ func (p *Presenter) doBuildTemplate() ([]byte, error) {
 }
 
 func (p *Presenter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	p.logger.Info("get", zap.String("uri", req.RequestURI), zap.String("addr", req.RemoteAddr))
 	if req.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		_, _ = io.WriteString(w, "use GET method")

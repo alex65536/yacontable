@@ -7,6 +7,7 @@ import (
 	"github.com/alex65536/yacontable/internal"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/acme/autocert"
+	"github.com/klauspost/compress/gzhttp"
 )
 
 func setupServers(conf *internal.Config) {
@@ -63,10 +64,10 @@ func main() {
 		panic(err)
 	}
 
-	http.Handle("/", pres)
-	http.HandleFunc("/style.css", func(w http.ResponseWriter, req *http.Request) {
+	http.Handle("/", gzhttp.GzipHandler(pres))
+	http.Handle("/style.css", gzhttp.GzipHandler(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		http.ServeFile(w, req, "./data/style.css")
-	})
+	})))
 
 	<-make(chan struct{})
 }

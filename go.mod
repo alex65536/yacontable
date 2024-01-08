@@ -3,6 +3,7 @@ module github.com/alex65536/yacontable
 go 1.21
 
 require (
+	github.com/klauspost/compress v1.17.4
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.16.0
 	golang.org/x/oauth2 v0.15.0
