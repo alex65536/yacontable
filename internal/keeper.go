@@ -81,7 +81,7 @@ func (k *Keeper) doGetHeavy(ctx context.Context, logger *zap.Logger) (*Standings
 				if err != nil {
 					return nil, err
 				}
-				err = st.FilterRegex(k.conf.LoginWhitelistRegex)
+				st, err = st.FilterRegex(k.conf.LoginWhitelistRegex)
 				if err != nil {
 					return nil, err
 				}

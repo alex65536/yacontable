@@ -99,7 +99,7 @@ func (p *Presenter) doBuildTemplate(filter string) ([]byte, error) {
 		return nil, fmt.Errorf("getting statements: %w", err)
 	}
 	if filter != "" {
-		st.FilterPrefix(filter)
+		st = st.FilterPrefix(filter)
 	}
 	var b bytes.Buffer
 	err = p.t.ExecuteTemplate(&b, "standings.html", &state{
