@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/alex65536/yacontable/internal"
+	"github.com/klauspost/compress/gzhttp"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/acme/autocert"
-	"github.com/klauspost/compress/gzhttp"
 )
 
 func setupServers(conf *internal.Config) {

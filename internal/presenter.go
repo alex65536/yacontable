@@ -52,6 +52,9 @@ func NewPresenter(ctx context.Context, logger *zap.Logger, k *Keeper, conf *Conf
 		"supportsColor": func() bool {
 			return conf.MaxScorePerTask != nil
 		},
+		"supportsFullScores": func() bool {
+			return conf.MaxScorePerTask != nil
+		},
 		"calcColor": func(count int, score float64) string {
 			return getScoreColor(score / (*conf.MaxScorePerTask * float64(count)))
 		},
@@ -65,16 +68,45 @@ func NewPresenter(ctx context.Context, logger *zap.Logger, k *Keeper, conf *Conf
 		ctx:    ctx,
 		logger: logger,
 		t:      t,
+		conf:   conf,
 	}, nil
 }
 
-func (p *Presenter) doBuildTemplate() ([]byte, error) {
+func (p *Presenter) calcNumFullScores(st *Standings) []int {
+	if p.conf.MaxScorePerTask == nil {
+		return nil
+	}
+	res := make([]int, len(st.Header.Tasks))
+	for _, pp := range st.Participants {
+		for i, t := range pp.Tasks {
+			if t.Score == *p.conf.MaxScorePerTask {
+				res[i]++
+			}
+		}
+	}
+	return res
+}
+
+func (p *Presenter) doBuildTemplate(filter string) ([]byte, error) {
+	type state struct {
+		Filter     string
+		Standings  *Standings
+		FullScores []int
+	}
+
 	st, err := p.k.Get(p.ctx, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("getting statements: %w", err)
 	}
+	if filter != "" {
+		st.FilterPrefix(filter)
+	}
 	var b bytes.Buffer
-	err = p.t.ExecuteTemplate(&b, "standings.html", st)
+	err = p.t.ExecuteTemplate(&b, "standings.html", &state{
+		Filter:     filter,
+		Standings:  st,
+		FullScores: p.calcNumFullScores(st),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("building template: %w", err)
 	}
@@ -88,7 +120,9 @@ func (p *Presenter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		_, _ = io.WriteString(w, "use GET method")
 		return
 	}
-	b, err := p.doBuildTemplate()
+	query := req.URL.Query()
+	filter := query.Get("filter")
+	b, err := p.doBuildTemplate(filter)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		p.logger.Error("error serving request", zap.Error(err))

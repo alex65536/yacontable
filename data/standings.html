@@ -6,28 +6,46 @@
         <link rel="stylesheet" type="text/css" href="/style.css">
     </head>
     <body>
-        <table class="standings">
-            <tr>
-                <th class="num-head">#</th>
-                <th class="login-head">Login</th>
-                {{ range .Header.Tasks }}
-                    <th class="task-head"> {{ .Title }} </th>
-                {{ end }}
-                <th class="score=head">Total</th>
-            </tr>
-            {{ range $i, $p := .Participants }}
-                {{ with $p }}
+        <div class="container">
+            <div class="filter">
+                <form method="get" action="/">
+                    <label for="filter">Filter by prefix:</label>
+                    <input type="text" id="filter" name="filter" value="{{ .Filter }}" />
+                    <input type="submit" value="Apply" />
+                </form>
+            </div>
+            <table class="standings">
                 <tr>
-                    <td class="num"> {{ $i | inc }} </td>
-                    <td class="login"> {{ .Login }} </td>
-                    {{ range .Tasks }}
-                        <td class="task"{{- if supportsColor }} style="color: {{ .Score | calcColor 1 }};" {{ end -}}> {{ printf "%.2f" .Score }} </td>
+                    <th class="num-head">#</th>
+                    <th class="login-head">Login</th>
+                    {{ range .Standings.Header.Tasks }}
+                        <th class="task-head"> {{ .Title }} </th>
                     {{ end }}
-                    <td class="total"{{- if supportsColor }} style="color: {{ .Total | calcColor (.Tasks | len) }};" {{ end -}}> {{ printf "%.2f" .Total }} </td>
+                    <th class="score=head">Total</th>
                 </tr>
+                {{ range $i, $p := .Standings.Participants }}
+                    {{ with $p }}
+                    <tr>
+                        <td class="num"> {{ $i | inc }} </td>
+                        <td class="login"> {{ .Login }} </td>
+                        {{ range .Tasks }}
+                            <td class="task"{{- if supportsColor }} style="color: {{ .Score | calcColor 1 }};" {{ end -}}> {{ printf "%.2f" .Score }} </td>
+                        {{ end }}
+                        <td class="total"{{- if supportsColor }} style="color: {{ .Total | calcColor (.Tasks | len) }};" {{ end -}}> {{ printf "%.2f" .Total }} </td>
+                    </tr>
+                    {{ end }}
                 {{ end }}
-            {{ end }}
-        </table>
+                {{ if supportsFullScores }}
+                    <tr>
+                        <td class="full-head"></td>
+                        <td class="full-head">Full solutions</td>
+                        {{ range .FullScores }}
+                            <td class="full"> {{ . }} </td>
+                        {{ end }}
+                        <td class="full-head"></td>
+                    </tr>
+                {{ end }}
+            </table>
+        </div>
     </body>
 </html>
-

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"slices"
+	"strings"
 
 	"github.com/alex65536/yacontable/pkg/goutil"
 	"go.uber.org/zap"
@@ -69,7 +70,7 @@ func (s *Standings) sort() {
 	})
 }
 
-func (s *Standings) Filter(loginRegex string) error {
+func (s *Standings) FilterRegex(loginRegex string) error {
 	re, err := regexp.Compile(loginRegex)
 	if err != nil {
 		return fmt.Errorf("compiling regex: %w", err)
@@ -77,8 +78,13 @@ func (s *Standings) Filter(loginRegex string) error {
 	s.Participants = goutil.Filter(s.Participants, func(p Participant) bool {
 		return re.MatchString(p.Login)
 	})
-	s.sort()
 	return nil
+}
+
+func (s *Standings) FilterPrefix(loginPrefix string) {
+	s.Participants = goutil.Filter(s.Participants, func(p Participant) bool {
+		return strings.HasPrefix(p.Login, loginPrefix)
+	})
 }
 
 func MergeStandings(logger *zap.Logger, sts ...*Standings) (*Standings, error) {
@@ -102,7 +108,6 @@ func MergeStandings(logger *zap.Logger, sts ...*Standings) (*Standings, error) {
 					},
 				}
 			}
-
 		}
 	}
 
