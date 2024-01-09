@@ -26,6 +26,7 @@ type Config struct {
 	StandingsForJudge    bool          `json:"standings_for_judge"`
 	PageSize             int           `json:"page_size"`
 	LoginWhitelistRegex  string        `json:"login_whitelist_regex"`
+	LoginBlacklistRegex  string        `json:"login_blacklist_regex"`
 	MaxScorePerTask      *float64      `json:"max_score_per_task"`
 }
 

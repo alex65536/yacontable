@@ -70,23 +70,43 @@ func (s *Standings) sort() {
 	})
 }
 
-func (s *Standings) FilterRegex(loginRegex string) (*Standings, error) {
+type FilterMode int
+
+const (
+	FilterModeWhitelist FilterMode = iota
+	FilterModeBlacklist
+)
+
+func makeFilter(src func(p Participant) bool, mode FilterMode) func(p Participant) bool {
+	switch mode {
+	case FilterModeWhitelist:
+		return src
+	case FilterModeBlacklist:
+		return func(p Participant) bool {
+			return !src(p)
+		}
+	default:
+		panic("unknown filter mode")
+	}
+}
+
+func (s *Standings) FilterRegex(loginRegex string, mode FilterMode) (*Standings, error) {
 	re, err := regexp.Compile(loginRegex)
 	if err != nil {
 		return nil, fmt.Errorf("compiling regex: %w", err)
 	}
 	res := *s
-	res.Participants = goutil.FilterCopy(s.Participants, func(p Participant) bool {
+	res.Participants = goutil.FilterCopy(s.Participants, makeFilter(func(p Participant) bool {
 		return re.MatchString(p.Login)
-	})
+	}, mode))
 	return &res, nil
 }
 
-func (s *Standings) FilterPrefix(loginPrefix string) *Standings {
+func (s *Standings) FilterPrefix(loginPrefix string, mode FilterMode) *Standings {
 	res := *s
-	res.Participants = goutil.FilterCopy(s.Participants, func(p Participant) bool {
+	res.Participants = goutil.FilterCopy(s.Participants, makeFilter(func(p Participant) bool {
 		return strings.HasPrefix(p.Login, loginPrefix)
-	})
+	}, mode))
 	return &res
 }
 
