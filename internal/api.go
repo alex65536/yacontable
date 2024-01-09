@@ -37,7 +37,7 @@ func NewApi(logger *zap.Logger, ctx context.Context, conf *Config, s *StaticSecr
 		ClientSecret: s.ClientSecret,
 		Endpoint:     endpoints.Yandex,
 		Scopes:       []string{"contest:submit"},
-		RedirectURL:  fmt.Sprintf("%v/authCallback", conf.Domain),
+		RedirectURL:  fmt.Sprintf("%v/authCallback", conf.BaseURL),
 	}
 
 	if d.Token == nil {

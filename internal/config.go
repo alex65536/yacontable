@@ -19,7 +19,7 @@ type Config struct {
 	ListenAddr           string        `json:"listen_addr"`
 	SecureListenAddr     string        `json:"secure_listen_addr"`
 	AllowedSecureDomains []string      `json:"allowed_secure_domains"`
-	Domain               string        `json:"domain"`
+	BaseURL              string        `json:"base_url"`
 	Contests             []Contest     `json:"contests"`
 	RefreshDuration      time.Duration `json:"refresh_duration"`
 	ErrorRefreshDuration time.Duration `json:"error_refresh_duration"`
@@ -34,8 +34,8 @@ func (c *Config) FillDefaults() {
 	if c.ListenAddr == "" {
 		c.ListenAddr = "0.0.0.0:4242"
 	}
-	if c.Domain == "" {
-		c.Domain = "http://localhost:4242"
+	if c.BaseURL == "" {
+		c.BaseURL = "http://localhost:4242"
 	}
 	if c.RefreshDuration == 0 {
 		c.RefreshDuration = 60 * time.Second
