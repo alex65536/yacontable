@@ -32,10 +32,10 @@ type Config struct {
 
 func (c *Config) FillDefaults() {
 	if c.ListenAddr == "" {
-		c.ListenAddr = "0.0.0.0:4242"
+		c.ListenAddr = "0.0.0.0:8080"
 	}
 	if c.BaseURL == "" {
-		c.BaseURL = "http://localhost:4242"
+		c.BaseURL = "http://localhost:8080"
 	}
 	if c.RefreshDuration == 0 {
 		c.RefreshDuration = 60 * time.Second
