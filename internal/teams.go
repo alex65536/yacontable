@@ -5,14 +5,19 @@ import (
 	"regexp"
 )
 
+type teamPattern struct {
+	teamID int
+	pat    *regexp.Regexp
+}
+
 type TeamAssigner struct {
 	logins   map[string]int
-	patterns [][]*regexp.Regexp
+	patterns []teamPattern
 }
 
 func NewTeamAssigner(conf *Config) (*TeamAssigner, error) {
 	logins := make(map[string]int)
-	patterns := make([][]*regexp.Regexp, len(conf.Teams))
+	var patterns []teamPattern
 	for i, team := range conf.Teams {
 		for _, login := range team.Logins {
 			logins[login] = i
@@ -22,7 +27,10 @@ func NewTeamAssigner(conf *Config) (*TeamAssigner, error) {
 			if err != nil {
 				return nil, fmt.Errorf("invalid pattern %q: %w", pattern, err)
 			}
-			patterns[i] = append(patterns[i], pat)
+			patterns = append(patterns, teamPattern{
+				teamID: i,
+				pat:    pat,
+			})
 		}
 	}
 	return &TeamAssigner{
@@ -36,12 +44,10 @@ func (t *TeamAssigner) AssignTeam(p Participant) Participant {
 		p.TeamID = teamID
 		return p
 	}
-	for i, pats := range t.patterns {
-		for _, pat := range pats {
-			if pat.MatchString(p.Login) {
-				p.TeamID = i
-				return p
-			}
+	for _, pat := range t.patterns {
+		if pat.pat.MatchString(p.Login) {
+			p.TeamID = pat.teamID
+			return p
 		}
 	}
 	p.TeamID = -1
