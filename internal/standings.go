@@ -24,10 +24,11 @@ type Header struct {
 }
 
 type Participant struct {
-	Login string            `json:"login"`
-	Name  string            `json:"name"`
-	Tasks []ParticipantCell `json:"tasks"`
-	Total float64           `json:"total"`
+	Login  string            `json:"login"`
+	Name   string            `json:"name"`
+	TeamID int               `json:"team_id"`
+	Tasks  []ParticipantCell `json:"tasks"`
+	Total  float64           `json:"total"`
 }
 
 type Standings struct {
@@ -110,6 +111,14 @@ func (s *Standings) FilterPrefix(loginPrefix string, mode FilterMode) *Standings
 	return &res
 }
 
+func (s *Standings) FilterTeam(teamID int) *Standings {
+	res := *s
+	res.Participants = goutil.FilterCopy(s.Participants, func(p Participant) bool {
+		return p.TeamID == teamID
+	})
+	return &res
+}
+
 func MergeStandings(logger *zap.Logger, sts ...*Standings) (*Standings, error) {
 	type pinfo struct {
 		used bool
@@ -121,13 +130,17 @@ func MergeStandings(logger *zap.Logger, sts ...*Standings) (*Standings, error) {
 		for _, p := range s.Participants {
 			if val, ok := participants[p.Login]; ok {
 				if val.p.Name != p.Name {
-					logger.Warn("name mismatch for participant with the same login", zap.String("login", val.p.Login), zap.String("name1", val.p.Name), zap.String("name2", val.p.Name))
+					logger.Warn("name mismatch for participant with the same login", zap.String("login", val.p.Login), zap.String("name1", val.p.Name), zap.String("name2", p.Name))
+				}
+				if val.p.TeamID != p.TeamID {
+					logger.Warn("team ID mismatch for participant with the same login", zap.String("login", val.p.Login), zap.Int("team1", val.p.TeamID), zap.Int("team2", p.TeamID))
 				}
 			} else {
 				participants[p.Login] = &pinfo{
 					p: Participant{
-						Login: p.Login,
-						Name:  p.Name,
+						Login:  p.Login,
+						Name:   p.Name,
+						TeamID: p.TeamID,
 					},
 				}
 			}

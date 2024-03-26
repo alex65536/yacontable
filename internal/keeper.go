@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -10,8 +11,9 @@ import (
 )
 
 type Keeper struct {
-	conf *Config
-	api  *Api
+	conf  *Config
+	api   *Api
+	teams *TeamAssigner
 
 	mu        sync.RWMutex
 	st        *Standings
@@ -20,11 +22,16 @@ type Keeper struct {
 	fetchTime time.Time
 }
 
-func NewKeeper(conf *Config, api *Api) *Keeper {
-	return &Keeper{
-		conf: conf,
-		api:  api,
+func NewKeeper(conf *Config, api *Api) (*Keeper, error) {
+	teams, err := NewTeamAssigner(conf)
+	if err != nil {
+		return nil, fmt.Errorf("creating team assigner: %w", err)
 	}
+	return &Keeper{
+		conf:  conf,
+		api:   api,
+		teams: teams,
+	}, nil
 }
 
 func (k *Keeper) Get(ctx context.Context, logger *zap.Logger) (*Standings, error) {
@@ -80,6 +87,9 @@ func (k *Keeper) doGetHeavy(ctx context.Context, logger *zap.Logger) (*Standings
 				st, err := k.api.FetchStandings(ct)
 				if err != nil {
 					return nil, err
+				}
+				for i := range st.Participants {
+					st.Participants[i] = k.teams.AssignTeam(st.Participants[i])
 				}
 				st, err = st.FilterRegex(k.conf.LoginWhitelistRegex, FilterModeWhitelist)
 				st, err = st.FilterRegex(k.conf.LoginBlacklistRegex, FilterModeBlacklist)

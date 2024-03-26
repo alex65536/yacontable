@@ -8,8 +8,11 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"strconv"
 
 	"go.uber.org/zap"
+
+	"github.com/alex65536/yacontable/pkg/goutil"
 )
 
 type Presenter struct {
@@ -55,8 +58,20 @@ func NewPresenter(ctx context.Context, logger *zap.Logger, k *Keeper, conf *Conf
 		"supportsFullScores": func() bool {
 			return conf.MaxScorePerTask != nil
 		},
+		"supportsNames": func() bool {
+			return conf.DisplayNames
+		},
+		"supportsTeams": func() bool {
+			return conf.DisplayTeams
+		},
 		"calcColor": func(count int, score float64) string {
 			return getScoreColor(score / (*conf.MaxScorePerTask * float64(count)))
+		},
+		"teamIDtoName": func(teamID int) string {
+			if teamID < 0 || teamID >= len(conf.Teams) {
+				return "?"
+			}
+			return conf.Teams[teamID].Name
 		},
 	}
 	t, err := template.New("standings").Funcs(funcMap).ParseFiles("./data/standings.html")
@@ -87,25 +102,34 @@ func (p *Presenter) calcNumFullScores(st *Standings) []int {
 	return res
 }
 
-func (p *Presenter) doBuildTemplate(filter string) ([]byte, error) {
+func (p *Presenter) doBuildTemplate(prefix string, teamID int) ([]byte, error) {
 	type state struct {
-		Filter     string
+		Prefix     string
+		TeamID     int
 		Standings  *Standings
 		FullScores []int
+		TeamNames  []string
 	}
 
 	st, err := p.k.Get(p.ctx, p.logger)
 	if err != nil {
 		return nil, fmt.Errorf("getting statements: %w", err)
 	}
-	if filter != "" {
-		st = st.FilterPrefix(filter, FilterModeWhitelist)
+	if prefix != "" {
+		st = st.FilterPrefix(prefix, FilterModeWhitelist)
+	}
+	if teamID != -1 {
+		st = st.FilterTeam(teamID)
 	}
 	var b bytes.Buffer
 	err = p.t.ExecuteTemplate(&b, "standings.html", &state{
-		Filter:     filter,
+		Prefix:     prefix,
+		TeamID:     teamID,
 		Standings:  st,
 		FullScores: p.calcNumFullScores(st),
+		TeamNames: goutil.Map(p.conf.Teams, func(t TeamConfig) string {
+			return t.Name
+		}),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("building template: %w", err)
@@ -126,8 +150,16 @@ func (p *Presenter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	query := req.URL.Query()
-	filter := query.Get("filter")
-	b, err := p.doBuildTemplate(filter)
+	prefix := query.Get("prefix")
+	teamID := -1
+	if p.conf.DisplayTeams {
+		if teamStr := query.Get("team"); teamStr != "" {
+			if teamVal, err := strconv.ParseInt(teamStr, 10, 0); err == nil && 0 <= int(teamVal) && int(teamVal) < len(p.conf.Teams) {
+				teamID = int(teamVal)
+			}
+		}
+	}
+	b, err := p.doBuildTemplate(prefix, teamID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		p.logger.Error("error serving request", zap.Error(err))

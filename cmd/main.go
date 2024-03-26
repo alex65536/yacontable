@@ -58,7 +58,10 @@ func main() {
 		panic(err)
 	}
 
-	keep := internal.NewKeeper(conf, api)
+	keep, err := internal.NewKeeper(conf, api)
+	if err != nil {
+		panic(err)
+	}
 
 	pres, err := internal.NewPresenter(context.Background(), logger, keep, conf)
 	if err != nil {

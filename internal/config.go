@@ -15,6 +15,12 @@ type Contest struct {
 	Tag string `json:"tag"`
 }
 
+type TeamConfig struct {
+	Name     string   `json:"name"`
+	Patterns []string `json:"patterns"`
+	Logins   []string `json:"logins"`
+}
+
 type Config struct {
 	ListenAddr           string        `json:"listen_addr"`
 	SecureListenAddr     string        `json:"secure_listen_addr"`
@@ -28,6 +34,9 @@ type Config struct {
 	LoginWhitelistRegex  string        `json:"login_whitelist_regex"`
 	LoginBlacklistRegex  string        `json:"login_blacklist_regex"`
 	MaxScorePerTask      *float64      `json:"max_score_per_task"`
+	DisplayNames         bool          `json:"display_names"`
+	DisplayTeams         bool          `json:"display_teams"`
+	Teams                []TeamConfig  `json:"teams"`
 }
 
 func (c *Config) FillDefaults() {
