@@ -91,10 +91,17 @@ func (k *Keeper) doGetHeavy(ctx context.Context, logger *zap.Logger) (*Standings
 				for i := range st.Participants {
 					st.Participants[i] = k.teams.AssignTeam(st.Participants[i])
 				}
-				st, err = st.FilterRegex(k.conf.LoginWhitelistRegex, FilterModeWhitelist)
-				st, err = st.FilterRegex(k.conf.LoginBlacklistRegex, FilterModeBlacklist)
-				if err != nil {
-					return nil, err
+				if k.conf.LoginWhitelistRegex != nil {
+					st, err = st.FilterRegex(*k.conf.LoginWhitelistRegex, FilterModeWhitelist)
+					if err != nil {
+						return nil, err
+					}
+				}
+				if k.conf.LoginBlacklistRegex != nil {
+					st, err = st.FilterRegex(*k.conf.LoginBlacklistRegex, FilterModeBlacklist)
+					if err != nil {
+						return nil, err
+					}
 				}
 				return st, nil
 			}()

@@ -31,8 +31,8 @@ type Config struct {
 	ErrorRefreshDuration time.Duration `json:"error_refresh_duration"`
 	StandingsForJudge    bool          `json:"standings_for_judge"`
 	PageSize             int           `json:"page_size"`
-	LoginWhitelistRegex  string        `json:"login_whitelist_regex"`
-	LoginBlacklistRegex  string        `json:"login_blacklist_regex"`
+	LoginWhitelistRegex  *string       `json:"login_whitelist_regex"`
+	LoginBlacklistRegex  *string       `json:"login_blacklist_regex"`
 	MaxScorePerTask      *float64      `json:"max_score_per_task"`
 	DisplayNames         bool          `json:"display_names"`
 	DisplayTeams         bool          `json:"display_teams"`
@@ -54,9 +54,6 @@ func (c *Config) FillDefaults() {
 	}
 	if c.PageSize == 0 {
 		c.PageSize = 10000
-	}
-	if c.LoginWhitelistRegex == "" {
-		c.LoginWhitelistRegex = ".*"
 	}
 }
 
