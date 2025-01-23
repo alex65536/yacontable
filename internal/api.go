@@ -100,6 +100,9 @@ func (a *Api) FetchStandings(contest Contest) (*Standings, error) {
 	v.Add("pageSize", fmt.Sprintf("%v", a.conf.PageSize))
 
 	rsp, err := a.client.Get(fmt.Sprintf("https://api.contest.yandex.net/api/public/v2/contests/%v/standings?%v", contest.ID, v.Encode()))
+	if err != nil {
+		return nil, fmt.Errorf("sending request to api: %w", err)
+	}
 	defer func() {
 		_, _ = io.Copy(io.Discard, rsp.Body)
 		_ = rsp.Body.Close()
