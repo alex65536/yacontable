@@ -3,32 +3,38 @@
     <head>
         <title>Contest Standings</title>
         <meta charset="UTF-8">
-        <link rel="stylesheet" type="text/css" href="/style.css">
+        <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
         <div class="container">
-            <div class="filter">
-                <form method="get" action="">
-                    <label for="prefix">Prefix:</label>
-                    <input type="text" id="prefix" name="prefix" value="{{ .Prefix }}" />
-                    {{ if supportsTeams }}
+            {{ if showFilter }}
+                <div class="filter">
+                    <form method="get" action="">
+                        {{ if supportsLogins }}
+                            <label for="prefix">Prefix:</label>
+                            <input type="text" id="prefix" name="prefix" value="{{ .Prefix }}" />
+                        {{ end }}
+                        {{ if supportsTeams }}
+                            <span class="splitter"></span>
+                            <label for="team">Team:</label>
+                            <select id="team" name="team">
+                                <option value=""{{- if $.TeamID | eq -1 }} selected{{end}}>All</option>
+                                {{ range $i, $p := .TeamNames }}
+                                    <option value="{{ $i }}"{{- if $i | eq $.TeamID }} selected{{end}}>{{ $p }}</option>
+                                {{ end }}
+                            </select>
+                        {{ end }}
                         <span class="splitter"></span>
-                        <label for="team">Team:</label>
-                        <select id="team" name="team">
-                            <option value=""{{- if $.TeamID | eq -1 }} selected{{end}}>All</option>
-                            {{ range $i, $p := .TeamNames }}
-                                <option value="{{ $i }}"{{- if $i | eq $.TeamID }} selected{{end}}>{{ $p }}</option>
-                            {{ end }}
-                        </select>
-                    {{ end }}
-                    <span class="splitter"></span>
-                    <input type="submit" value="Apply" />
-                </form>
-            </div>
+                        <input type="submit" value="Apply" />
+                    </form>
+                </div>
+            {{ end }}
             <table class="standings">
                 <tr>
                     <th class="num-head">#</th>
-                    <th class="login-head">Login</th>
+                    {{ if supportsLogins }}
+                        <th class="login-head">Login</th>
+                    {{ end }}
                     {{ if supportsNames }}
                         <th class="login-head">Name</th>
                     {{ end }}
@@ -44,7 +50,9 @@
                     {{ with $p }}
                     <tr>
                         <td class="num"> {{ $i | inc }} </td>
-                        <td class="login"> {{ .Login }} </td>
+                        {{ if supportsLogins }}
+                            <td class="login"> {{ .Login }} </td>
+                        {{ end }}
                         {{ if supportsNames }}
                             <td class="login"> {{ .Name }} </td>
                         {{ end }}
@@ -61,8 +69,10 @@
                 {{ if supportsFullScores }}
                     <tr>
                         <td class="full-head"></td>
-                        <td class="full-head">Full solutions</td>
-                        {{ if supportsNames }}
+                        {{ if (or supportsLogins supportsNames) }}
+                            <td class="full-head">Full solutions</td>
+                        {{ end }}
+                        {{ if (and supportsLogins supportsNames) }}
                             <td class="full-head"></td>
                         {{ end }}
                         {{ if supportsTeams }}

@@ -36,6 +36,7 @@ type Config struct {
 	MaxScorePerTask      *float64      `json:"max_score_per_task"`
 	DisplayNames         bool          `json:"display_names"`
 	DisplayTeams         bool          `json:"display_teams"`
+	HideLogins           bool          `json:"hide_logins"`
 	Teams                []TeamConfig  `json:"teams"`
 }
 

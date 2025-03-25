@@ -58,11 +58,17 @@ func NewPresenter(ctx context.Context, logger *zap.Logger, k *Keeper, conf *Conf
 		"supportsFullScores": func() bool {
 			return conf.MaxScorePerTask != nil
 		},
+		"supportsLogins": func() bool {
+			return !conf.HideLogins
+		},
 		"supportsNames": func() bool {
 			return conf.DisplayNames
 		},
 		"supportsTeams": func() bool {
 			return conf.DisplayTeams
+		},
+		"showFilter": func() bool {
+			return !conf.HideLogins || conf.DisplayTeams
 		},
 		"calcColor": func(count int, score float64) string {
 			return getScoreColor(score / (*conf.MaxScorePerTask * float64(count)))
@@ -151,6 +157,9 @@ func (p *Presenter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	query := req.URL.Query()
 	prefix := query.Get("prefix")
+	if p.conf.HideLogins {
+		prefix = ""
+	}
 	teamID := -1
 	if p.conf.DisplayTeams {
 		if teamStr := query.Get("team"); teamStr != "" {
